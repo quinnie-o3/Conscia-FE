@@ -12,4 +12,10 @@
 /captures
 .externalNativeBuild
 .cxx
+
+# Monorepo ignores
+/backend/node_modules/
+/backend/dist/
+/backend/.env
+/Frontend/build/
 local.properties
