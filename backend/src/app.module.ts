@@ -10,7 +10,10 @@ import { User, UserSchema } from './schemas/user.schema';
 import { Device, DeviceSchema } from './schemas/device.schema';
 import { AppInfo, AppInfoSchema } from './schemas/app-info.schema';
 import { PurposeTag, PurposeTagSchema } from './schemas/purpose-tag.schema';
-import { UsageSession, UsageSessionSchema } from './schemas/usage-session.schema';
+import {
+  UsageSession,
+  UsageSessionSchema,
+} from './schemas/usage-session.schema';
 import { Goal, GoalSchema } from './schemas/goal.schema';
 
 // Import all services
@@ -20,6 +23,8 @@ import { DeviceService } from './services/device.service';
 import { SessionService } from './services/session.service';
 import { TagService } from './services/tag.service';
 import { GoalService } from './services/goal.service';
+import { AppInfoService } from './services/appinfo.service';
+import { StatisticsService } from './services/statistics.service';
 
 // Import all controllers
 import { AuthController } from './controllers/auth.controller';
@@ -28,6 +33,8 @@ import { DeviceController } from './controllers/device.controller';
 import { SessionController } from './controllers/session.controller';
 import { TagController } from './controllers/tag.controller';
 import { GoalController } from './controllers/goal.controller';
+import { AppInfoController } from './controllers/appinfo.controller';
+import { StatisticsController } from './controllers/statistics.controller';
 
 @Module({
   imports: [
@@ -64,6 +71,8 @@ import { GoalController } from './controllers/goal.controller';
     SessionController,
     TagController,
     GoalController,
+    AppInfoController,
+    StatisticsController,
   ],
   providers: [
     AppService,
@@ -73,6 +82,8 @@ import { GoalController } from './controllers/goal.controller';
     SessionService,
     TagService,
     GoalService,
+    AppInfoService,
+    StatisticsService,
   ],
 })
-export class AppModule { }
+export class AppModule {}
