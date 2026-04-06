@@ -21,6 +21,14 @@ import { SessionService } from './services/session.service';
 import { TagService } from './services/tag.service';
 import { GoalService } from './services/goal.service';
 
+// Import all controllers
+import { AuthController } from './controllers/auth.controller';
+import { UserController } from './controllers/user.controller';
+import { DeviceController } from './controllers/device.controller';
+import { SessionController } from './controllers/session.controller';
+import { TagController } from './controllers/tag.controller';
+import { GoalController } from './controllers/goal.controller';
+
 @Module({
   imports: [
     // Load environment variables from .env
@@ -48,7 +56,15 @@ import { GoalService } from './services/goal.service';
       signOptions: { expiresIn: '24h' },
     }),
   ],
-  controllers: [AppController],
+  controllers: [
+    AppController,
+    AuthController,
+    UserController,
+    DeviceController,
+    SessionController,
+    TagController,
+    GoalController,
+  ],
   providers: [
     AppService,
     AuthService,
