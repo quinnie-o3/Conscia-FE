@@ -114,8 +114,10 @@ export class StatisticsController {
     @Query('endDate') endDate: string,
   ) {
     try {
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const daysBack = 6;
       const today = new Date().toISOString().split('T')[0];
-      const weekAgo = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
+      const weekAgo = new Date(Date.now() - daysBack * msPerDay)
         .toISOString()
         .split('T')[0];
 

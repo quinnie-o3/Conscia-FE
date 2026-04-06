@@ -501,11 +501,14 @@ export class StatisticsService {
         const actualSeconds = result[0]?.totalSeconds ?? 0;
         const actualMinutes = Math.floor(actualSeconds / 60);
         const targetValue = goal.targetValue;
-        const progressPercent = Math.min(
-          parseFloat(((actualMinutes / targetValue) * 100).toFixed(1)),
-          100,
-        );
-        const isExceeded = actualMinutes > targetValue;
+        const progressPercent =
+          targetValue > 0
+            ? Math.min(
+                parseFloat(((actualMinutes / targetValue) * 100).toFixed(1)),
+                100,
+              )
+            : 0;
+        const isExceeded = targetValue > 0 && actualMinutes > targetValue;
 
         return {
           goalId: goal._id,

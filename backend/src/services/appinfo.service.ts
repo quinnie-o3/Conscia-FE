@@ -108,11 +108,13 @@ export class AppInfoService {
    * Search apps by name or package
    */
   async searchApps(query: string) {
+    // Escape special regex characters to prevent ReDoS
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const apps = await this.appInfoModel
       .find({
         $or: [
-          { appName: { $regex: query, $options: 'i' } },
-          { packageName: { $regex: query, $options: 'i' } },
+          { appName: { $regex: escapedQuery, $options: 'i' } },
+          { packageName: { $regex: escapedQuery, $options: 'i' } },
         ],
       })
       .limit(20);
