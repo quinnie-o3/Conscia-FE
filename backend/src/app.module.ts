@@ -10,8 +10,14 @@ import { User, UserSchema } from './schemas/user.schema';
 import { Device, DeviceSchema } from './schemas/device.schema';
 import { AppInfo, AppInfoSchema } from './schemas/app-info.schema';
 import { PurposeTag, PurposeTagSchema } from './schemas/purpose-tag.schema';
-import { UsageSession, UsageSessionSchema } from './schemas/usage-session.schema';
+import {
+  UsageSession,
+  UsageSessionSchema,
+} from './schemas/usage-session.schema';
 import { Goal, GoalSchema } from './schemas/goal.schema';
+
+// Import guards
+import { JwtGuard } from './guards/jwt.guard';
 
 // Import all services
 import { AuthService } from './services/auth.service';
@@ -73,6 +79,7 @@ import { GoalController } from './controllers/goal.controller';
     SessionService,
     TagService,
     GoalService,
+    JwtGuard,
   ],
 })
-export class AppModule { }
+export class AppModule {}
