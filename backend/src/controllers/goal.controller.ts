@@ -7,9 +7,12 @@ import {
     Body,
     Param,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 import { GoalService } from '../services/goal.service';
+import { JwtGuard } from '../guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('goals')
 export class GoalController {
     constructor(private goalService: GoalService) { }

@@ -29,6 +29,9 @@ import { SessionController } from './controllers/session.controller';
 import { TagController } from './controllers/tag.controller';
 import { GoalController } from './controllers/goal.controller';
 
+// Import guards
+import { JwtGuard } from './guards/jwt.guard';
+
 @Module({
   imports: [
     // Load environment variables from .env
@@ -73,6 +76,7 @@ import { GoalController } from './controllers/goal.controller';
     SessionService,
     TagService,
     GoalService,
+    JwtGuard,
   ],
 })
 export class AppModule { }

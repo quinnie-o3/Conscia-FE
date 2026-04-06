@@ -7,9 +7,12 @@ import {
     Body,
     Param,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 import { SessionService } from '../services/session.service';
+import { JwtGuard } from '../guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('sessions')
 export class SessionController {
     constructor(private sessionService: SessionService) { }

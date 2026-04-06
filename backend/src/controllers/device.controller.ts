@@ -7,9 +7,12 @@ import {
     Body,
     Param,
     Query,
+    UseGuards,
 } from '@nestjs/common';
 import { DeviceService } from '../services/device.service';
+import { JwtGuard } from '../guards/jwt.guard';
 
+@UseGuards(JwtGuard)
 @Controller('devices')
 export class DeviceController {
     constructor(private deviceService: DeviceService) { }
