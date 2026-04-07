@@ -10,7 +10,10 @@ import { User, UserSchema } from './schemas/user.schema';
 import { Device, DeviceSchema } from './schemas/device.schema';
 import { AppInfo, AppInfoSchema } from './schemas/app-info.schema';
 import { PurposeTag, PurposeTagSchema } from './schemas/purpose-tag.schema';
-import { UsageSession, UsageSessionSchema } from './schemas/usage-session.schema';
+import {
+  UsageSession,
+  UsageSessionSchema,
+} from './schemas/usage-session.schema';
 import { Goal, GoalSchema } from './schemas/goal.schema';
 
 // Import all services
@@ -20,6 +23,8 @@ import { DeviceService } from './services/device.service';
 import { SessionService } from './services/session.service';
 import { TagService } from './services/tag.service';
 import { GoalService } from './services/goal.service';
+import { AppInfoService } from './services/app-info.service';
+import { ReminderService } from './services/reminder.service';
 
 // Import all controllers
 import { AuthController } from './controllers/auth.controller';
@@ -28,6 +33,12 @@ import { DeviceController } from './controllers/device.controller';
 import { SessionController } from './controllers/session.controller';
 import { TagController } from './controllers/tag.controller';
 import { GoalController } from './controllers/goal.controller';
+import { PurposeTagController } from './controllers/purpose-tag.controller';
+import { AppInfoController } from './controllers/app-info.controller';
+import { ReminderController } from './controllers/reminder.controller';
+
+// Import guards
+import { JwtGuard } from './guards/jwt.guard';
 
 @Module({
   imports: [
@@ -48,6 +59,7 @@ import { GoalController } from './controllers/goal.controller';
       { name: PurposeTag.name, schema: PurposeTagSchema },
       { name: UsageSession.name, schema: UsageSessionSchema },
       { name: Goal.name, schema: GoalSchema },
+      { name: Reminder.name, schema: ReminderSchema },
     ]),
 
     // Setup JWT
@@ -64,6 +76,9 @@ import { GoalController } from './controllers/goal.controller';
     SessionController,
     TagController,
     GoalController,
+    PurposeTagController,
+    AppInfoController,
+    ReminderController,
   ],
   providers: [
     AppService,
@@ -73,6 +88,9 @@ import { GoalController } from './controllers/goal.controller';
     SessionService,
     TagService,
     GoalService,
+    AppInfoService,
+    JwtGuard,
+    ReminderService,
   ],
 })
 export class AppModule { }

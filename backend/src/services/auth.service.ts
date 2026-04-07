@@ -7,111 +7,146 @@ import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
-    constructor(
-        @InjectModel(User.name) private userModel: Model<User>,
-        private jwtService: JwtService,
-    ) { }
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private jwtService: JwtService,
+  ) { }
 
-    /**
-     * Register new user
-     */
-    async register(email: string, fullName: string, password: string) {
-        // Check if user already exists
-        const existingUser = await this.userModel.findOne({ email });
-        if (existingUser) {
-            throw new Error('Email already exists');
-        }
+  /**
+   * Generate Access Token (15 minutes)
+   */
+  private generateAccessToken(userId: string, email: string) {
+    return this.jwtService.sign(
+      { userId, email, type: 'access' },
+      {
+        secret: process.env.JWT_SECRET || 'your-secret-key',
+        expiresIn: '15m',
+      },
+    );
+  }
 
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
+  /**
+   * Generate Refresh Token (7 days)
+   */
+  private generateRefreshToken(userId: string, email: string) {
+    return this.jwtService.sign(
+      { userId, email, type: 'refresh' },
+      {
+        secret: process.env.REFRESH_TOKEN_SECRET || 'refresh-secret-key',
+        expiresIn: '7d',
+      },
+    );
+  }
 
-        // Create user
-        const user = await this.userModel.create({
-            email,
-            fullName,
-            passwordHash: hashedPassword,
-            role: 'USER',
-            isActive: true,
-        });
+  /**
+   * Generate both tokens
+   */
+  generateTokens(userId: string, email: string) {
+    const accessToken = this.generateAccessToken(userId, email);
+    const refreshToken = this.generateRefreshToken(userId, email);
 
-        return {
-            userId: user._id,
-            email: user.email,
-            fullName: user.fullName,
-            message: 'User registered successfully',
-        };
+    return {
+      accessToken,
+      refreshToken,
+      expiresIn: 900, // 15 minutes in seconds
+    };
+  }
+
+  /**
+   * Verify Refresh Token và issue new Access Token
+   */
+  refreshAccessToken(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.REFRESH_TOKEN_SECRET || 'refresh-secret-key',
+      });
+
+      if (payload.type !== 'refresh') {
+        throw new Error('Invalid token type');
+      }
+
+      const accessToken = this.generateAccessToken(
+        payload.userId,
+        payload.email,
+      );
+
+      return {
+        accessToken,
+        expiresIn: 900,
+      };
+    } catch (error) {
+      throw new Error('Invalid or expired refresh token');
     }
+  }
 
-    /**
-     * Login user
-     */
-    async login(email: string, password: string) {
-        // Find user by email
-        const user = await this.userModel.findOne({ email });
-        if (!user) {
-            throw new Error('User not found');
-        }
+  /**
+   * Register new user
+   */
+  async register(email: string, password: string, fullName: string) {
+    try {
+      // Check if user exists
+      const existingUser = await this.userModel.findOne({ email });
+      if (existingUser) {
+        throw new Error('Email already exists');
+      }
 
-        // Compare password
-        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-        if (!isPasswordValid) {
-            throw new Error('Invalid password');
-        }
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Generate JWT token
-        const accessToken = this.jwtService.sign(
-            { userId: user._id, email: user.email },
-            { expiresIn: '24h' },
-        );
+      // Create user
+      const newUser = await this.userModel.create({
+        email,
+        passwordHash: hashedPassword,
+        fullName,
+        createdAt: new Date(),
+      });
 
-        const refreshToken = this.jwtService.sign(
-            { userId: user._id },
-            { expiresIn: '7d' },
-        );
+      // Generate tokens
+      const tokens = this.generateTokens(newUser._id.toString(), email);
 
-        return {
-            accessToken,
-            refreshToken,
-            tokenType: 'Bearer',
-            expiresIn: 86400,
-            user: {
-                userId: user._id,
-                email: user.email,
-                fullName: user.fullName,
-            },
-        };
+      return {
+        user: {
+          userId: newUser._id,
+          email: newUser.email,
+          fullName: newUser.fullName,
+        },
+        ...tokens,
+      };
+    } catch (error) {
+      throw new Error(error.message);
     }
+  }
 
-    /**
-     * Validate JWT token
-     */
-    async validateToken(token: string) {
-        try {
-            const decoded = this.jwtService.verify(token);
-            return decoded;
-        } catch (error) {
-            throw new Error('Invalid token');
-        }
+  /**
+   * Login user
+   */
+  async login(email: string, password: string) {
+    try {
+      // Find user
+      const user = await this.userModel.findOne({ email });
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      // Check password
+      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isPasswordValid) {
+        throw new Error('Invalid credentials');
+      }
+
+      // Generate tokens
+      const tokens = this.generateTokens(user._id.toString(), email);
+
+      return {
+        user: {
+          userId: user._id,
+          email: user.email,
+          fullName: user.fullName,
+        },
+        ...tokens,
+      };
+    } catch (error) {
+      throw new Error(error.message);
     }
-
-    /**
-     * Refresh access token
-     */
-    async refreshToken(refreshToken: string) {
-        try {
-            const decoded = this.jwtService.verify(refreshToken);
-            const newAccessToken = this.jwtService.sign(
-                { userId: decoded.userId },
-                { expiresIn: '24h' },
-            );
-
-            return {
-                accessToken: newAccessToken,
-                tokenType: 'Bearer',
-                expiresIn: 86400,
-            };
-        } catch (error) {
-            throw new Error('Invalid refresh token');
-        }
-    }
+  }
 }

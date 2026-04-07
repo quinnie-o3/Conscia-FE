@@ -5,90 +5,90 @@ import { Goal } from '../schemas/goal.schema';
 
 @Injectable()
 export class GoalService {
-    constructor(@InjectModel(Goal.name) private goalModel: Model<Goal>) { }
+  constructor(
+    @InjectModel(Goal.name) private goalModel: Model<Goal>,
+  ) { }
 
-    /**
-     * Create goal
-     */
-    async createGoal(userId: string, goalData: any) {
-        const goal = await this.goalModel.create({
-            userId,
-            ...goalData,
-            status: 'ACTIVE',
-            currentProgress: 0,
-        });
+  async createGoal(userId: string, goalData: any) {
+    const {
+      goalType,
+      targetValue,
+      periodType,
+      appId,
+    } = goalData;
 
-        return {
-            goalId: goal._id,
-            userId: goal.userId,
-            goalName: goal.goalName,
-            targetValue: goal.targetValue,
-            status: goal.status,
-            createdAt: goal.createdAt,
-        };
+    const newGoal = await this.goalModel.create({
+      userId,
+      goalType,
+      targetValue,
+      periodType,
+      appId: appId || null,
+      status: 'ACTIVE',
+      createdAt: new Date(),
+    });
+
+    return newGoal;
+  }
+
+  async getGoalById(goalId: string) {
+    const goal = await this.goalModel
+      .findById(goalId)
+      .populate('appId', 'appName packageName')
+      .exec();
+    if (!goal) {
+      throw new Error('Goal not found');
     }
+    return goal;
+  }
 
-    /**
-     * Get active goals of user
-     */
-    async getActiveGoals(userId: string) {
-        const goals = await this.goalModel.find({
-            userId,
-            status: 'ACTIVE',
-        });
+  async getGoalsByUserId(userId: string) {
+    const goals = await this.goalModel
+      .find({ userId })
+      .populate('appId', 'appName packageName')
+      .sort({ createdAt: -1 })
+      .exec();
 
-        return goals.map((g) => ({
-            goalId: g._id,
-            goalName: g.goalName,
-            goalType: g.goalType,
-            targetValue: g.targetValue,
-            currentProgress: g.currentProgress,
-            status: g.status,
-        }));
+    return goals;
+  }
+
+  async getActiveGoals(userId: string) {
+    const goals = await this.goalModel
+      .find({ userId, status: 'ACTIVE' })
+      .populate('appId', 'appName packageName')
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return goals;
+  }
+
+  async updateGoal(goalId: string, updateData: any) {
+    const goal = await this.goalModel
+      .findByIdAndUpdate(goalId, updateData, { new: true })
+      .populate('appId', 'appName packageName')
+      .exec();
+
+    if (!goal) {
+      throw new Error('Goal not found');
     }
+    return goal;
+  }
 
-    /**
-     * Get all goals of user
-     */
-    async getUserGoals(userId: string) {
-        const goals = await this.goalModel.find({ userId });
-        return goals.map((g) => ({
-            goalId: g._id,
-            goalName: g.goalName,
-            targetValue: g.targetValue,
-            currentProgress: g.currentProgress,
-            status: g.status,
-        }));
+  async deleteGoal(goalId: string) {
+    const goal = await this.goalModel.findByIdAndDelete(goalId).exec();
+    if (!goal) {
+      throw new Error('Goal not found');
     }
+    return goal;
+  }
 
-    /**
-     * Update goal
-     */
-    async updateGoal(goalId: string, updateData: any) {
-        const goal = await this.goalModel.findByIdAndUpdate(goalId, updateData, {
-            new: true,
-        });
+  async deactivateGoal(goalId: string) {
+    const goal = await this.goalModel
+      .findByIdAndUpdate(goalId, { status: 'INACTIVE' }, { new: true })
+      .exec();
 
-        if (!goal) {
-            throw new Error('Goal not found');
-        }
-
-        return {
-            goalId: goal._id,
-            goalName: goal.goalName,
-            currentProgress: goal.currentProgress,
-            status: goal.status,
-        };
+    if (!goal) {
+      throw new Error('Goal not found');
     }
-
-    /**
-     * Delete goal
-     */
-    async deleteGoal(goalId: string) {
-        const goal = await this.goalModel.findByIdAndDelete(goalId);
-        if (!goal) {
-            throw new Error('Goal not found');
-        }
-        return { message: 'Goal deleted successfully' };
-    }
+    return goal;
+  }
 }
