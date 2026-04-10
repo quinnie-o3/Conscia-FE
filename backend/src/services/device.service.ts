@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Device } from '../schemas/device.schema';
+import {
+  DeviceNotFoundException,
+  InvalidInputException,
+} from '../exceptions/custom.exceptions';
 
 @Injectable()
 export class DeviceService {
@@ -49,21 +53,15 @@ export class DeviceService {
    * Get device by ID
    */
   async getDeviceById(deviceId: string) {
-    const device = await this.deviceModel.findById(deviceId);
-    if (!device) {
-      throw new Error('Device not found');
+    if (!deviceId) {
+      throw new InvalidInputException('deviceId', 'Device ID is required');
     }
 
-    return {
-      deviceId: device._id,
-      userId: device.userId,
-      deviceName: device.deviceName,
-      deviceType: device.deviceType,
-      osVersion: device.osVersion,
-      deviceModel: device.deviceModel,
-      isActive: device.isActive,
-      createdAt: device.createdAt,
-    };
+    const device = await this.deviceModel.findById(deviceId).exec();
+    if (!device) {
+      throw new DeviceNotFoundException(deviceId);
+    }
+    return device;
   }
 
   /**
@@ -92,10 +90,10 @@ export class DeviceService {
    * Delete device
    */
   async deleteDevice(deviceId: string) {
-    const device = await this.deviceModel.findByIdAndDelete(deviceId);
+    const device = await this.deviceModel.findByIdAndDelete(deviceId).exec();
     if (!device) {
-      throw new Error('Device not found');
+      throw new DeviceNotFoundException(deviceId);
     }
-    return { message: 'Device deleted successfully' };
+    return device;
   }
 }

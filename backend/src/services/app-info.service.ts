@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AppInfo } from '../schemas/app-info.schema';
+import {
+  AppNotFoundException,
+  InvalidInputException,
+} from '../exceptions/custom.exceptions';
 
 @Injectable()
 export class AppInfoService {
@@ -17,9 +21,13 @@ export class AppInfoService {
   }
 
   async getAppById(appId: string) {
-    const app = await this.appInfoModel.findById(appId);
+    if (!appId) {
+      throw new InvalidInputException('appId', 'App ID is required');
+    }
+
+    const app = await this.appInfoModel.findById(appId).exec();
     if (!app) {
-      throw new Error('Application not found');
+      throw new AppNotFoundException(appId);
     }
     return app;
   }
@@ -66,9 +74,9 @@ export class AppInfoService {
   }
 
   async deleteApp(appId: string) {
-    const app = await this.appInfoModel.findByIdAndDelete(appId);
+    const app = await this.appInfoModel.findByIdAndDelete(appId).exec();
     if (!app) {
-      throw new Error('Application not found');
+      throw new AppNotFoundException(appId);
     }
     return app;
   }

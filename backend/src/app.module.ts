@@ -15,6 +15,7 @@ import {
   UsageSessionSchema,
 } from './schemas/usage-session.schema';
 import { Goal, GoalSchema } from './schemas/goal.schema';
+import { Reminder, ReminderSchema } from './schemas/reminder.schema';
 
 // Import all services
 import { AuthService } from './services/auth.service';
@@ -25,6 +26,7 @@ import { TagService } from './services/tag.service';
 import { GoalService } from './services/goal.service';
 import { AppInfoService } from './services/app-info.service';
 import { ReminderService } from './services/reminder.service';
+import { StatisticsService } from './services/statistics.service';
 
 // Import all controllers
 import { AuthController } from './controllers/auth.controller';
@@ -36,6 +38,7 @@ import { GoalController } from './controllers/goal.controller';
 import { PurposeTagController } from './controllers/purpose-tag.controller';
 import { AppInfoController } from './controllers/app-info.controller';
 import { ReminderController } from './controllers/reminder.controller';
+import { StatisticsController } from './controllers/statistics.controller';
 
 // Import guards
 import { JwtGuard } from './guards/jwt.guard';
@@ -79,6 +82,7 @@ import { JwtGuard } from './guards/jwt.guard';
     PurposeTagController,
     AppInfoController,
     ReminderController,
+    StatisticsController,
   ],
   providers: [
     AppService,
@@ -91,6 +95,7 @@ import { JwtGuard } from './guards/jwt.guard';
     AppInfoService,
     JwtGuard,
     ReminderService,
+    StatisticsService,
   ],
 })
 export class AppModule { }

@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Goal } from '../schemas/goal.schema';
+import {
+  GoalNotFoundException,
+  InvalidInputException,
+} from '../exceptions/custom.exceptions';
 
 @Injectable()
 export class GoalService {
@@ -31,12 +35,16 @@ export class GoalService {
   }
 
   async getGoalById(goalId: string) {
+    if (!goalId) {
+      throw new InvalidInputException('goalId', 'Goal ID is required');
+    }
+
     const goal = await this.goalModel
       .findById(goalId)
       .populate('appId', 'appName packageName')
       .exec();
     if (!goal) {
-      throw new Error('Goal not found');
+      throw new GoalNotFoundException(goalId);
     }
     return goal;
   }
@@ -76,7 +84,7 @@ export class GoalService {
   async deleteGoal(goalId: string) {
     const goal = await this.goalModel.findByIdAndDelete(goalId).exec();
     if (!goal) {
-      throw new Error('Goal not found');
+      throw new GoalNotFoundException(goalId);
     }
     return goal;
   }

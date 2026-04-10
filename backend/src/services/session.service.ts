@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UsageSession } from '../schemas/usage-session.schema';
+import {
+  SessionNotFoundException,
+  InvalidInputException,
+} from '../exceptions/custom.exceptions';
 
 @Injectable()
 export class SessionService {
@@ -148,12 +152,13 @@ export class SessionService {
   }
 
   async getSessionById(sessionId: string) {
-    const session = await this.sessionModel
-      .findById(sessionId)
-      .populate('appId', 'appName packageName category')
-      .exec();
+    if (!sessionId) {
+      throw new InvalidInputException('sessionId', 'Session ID is required');
+    }
+
+    const session = await this.sessionModel.findById(sessionId).exec();
     if (!session) {
-      throw new Error('Session not found');
+      throw new SessionNotFoundException(sessionId);
     }
     return session;
   }
@@ -192,9 +197,11 @@ export class SessionService {
   }
 
   async deleteSession(sessionId: string) {
-    const session = await this.sessionModel.findByIdAndDelete(sessionId).exec();
+    const session = await this.sessionModel
+      .findByIdAndDelete(sessionId)
+      .exec();
     if (!session) {
-      throw new Error('Session not found');
+      throw new SessionNotFoundException(sessionId);
     }
     return session;
   }

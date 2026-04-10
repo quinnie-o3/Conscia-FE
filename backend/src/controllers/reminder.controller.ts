@@ -12,6 +12,7 @@ import {
 import { ReminderService } from '../services/reminder.service';
 import { JwtGuard } from '../guards/jwt.guard';
 import { CurrentUser } from '../decorators/user.decorator';
+import { CreateReminderDto, UpdateReminderDto } from '../dtos/reminder.dto';
 
 @Controller('reminders')
 export class ReminderController {
@@ -20,18 +21,13 @@ export class ReminderController {
     @UseGuards(JwtGuard)
     @Post()
     async createReminder(
-        @Body()
-        body: {
-            type: string;
-            conditionValue: number;
-            message: string;
-        },
+        @Body() createReminderDto: CreateReminderDto,
         @CurrentUser() user: any,
     ) {
         try {
             const result = await this.reminderService.createReminder(
                 user.userId,
-                body,
+                createReminderDto,
             );
             return {
                 success: true,
@@ -122,7 +118,7 @@ export class ReminderController {
     @Put(':reminderId')
     async updateReminder(
         @Param('reminderId') reminderId: string,
-        @Body() body: any,
+        @Body() updateReminderDto: UpdateReminderDto,
         @CurrentUser() user: any,
     ) {
         try {
@@ -136,7 +132,7 @@ export class ReminderController {
 
             const result = await this.reminderService.updateReminder(
                 reminderId,
-                body,
+                updateReminderDto,
             );
             return {
                 success: true,

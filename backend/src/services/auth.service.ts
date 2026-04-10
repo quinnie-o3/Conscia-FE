@@ -2,8 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from '../schemas/user.schema';
 import * as bcrypt from 'bcryptjs';
+import { User } from '../schemas/user.schema';
+import {
+  UserAlreadyExistsException,
+  InvalidCredentialsException,
+  InvalidTokenException,
+  UserNotFoundException,
+  InvalidInputException,
+} from '../exceptions/custom.exceptions';
 
 @Injectable()
 export class AuthService {
@@ -12,141 +19,127 @@ export class AuthService {
     private jwtService: JwtService,
   ) { }
 
-  /**
-   * Generate Access Token (15 minutes)
-   */
-  private generateAccessToken(userId: string, email: string) {
-    return this.jwtService.sign(
-      { userId, email, type: 'access' },
-      {
-        secret: process.env.JWT_SECRET || 'your-secret-key',
-        expiresIn: '15m',
-      },
-    );
-  }
+  async register(email: string, fullName: string, password: string) {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new InvalidInputException('email', 'Invalid email format');
+    }
 
-  /**
-   * Generate Refresh Token (7 days)
-   */
-  private generateRefreshToken(userId: string, email: string) {
-    return this.jwtService.sign(
-      { userId, email, type: 'refresh' },
-      {
-        secret: process.env.REFRESH_TOKEN_SECRET || 'refresh-secret-key',
-        expiresIn: '7d',
-      },
-    );
-  }
+    // Validate fullName
+    if (!fullName || fullName.trim().length < 2) {
+      throw new InvalidInputException(
+        'fullName',
+        'Must be at least 2 characters',
+      );
+    }
 
-  /**
-   * Generate both tokens
-   */
-  generateTokens(userId: string, email: string) {
-    const accessToken = this.generateAccessToken(userId, email);
-    const refreshToken = this.generateRefreshToken(userId, email);
+    // Validate password strength
+    if (password.length < 6) {
+      throw new InvalidInputException(
+        'password',
+        'Must be at least 6 characters',
+      );
+    }
+
+    // Check if user already exists
+    const existingUser = await this.userModel.findOne({ email });
+    if (existingUser) {
+      throw new UserAlreadyExistsException(email);
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const user = await this.userModel.create({
+      email,
+      fullName,
+      passwordHash: hashedPassword,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
 
     return {
-      accessToken,
-      refreshToken,
-      expiresIn: 900, // 15 minutes in seconds
+      userId: user._id,
+      email: user.email,
+      fullName: user.fullName,
     };
   }
 
-  /**
-   * Verify Refresh Token và issue new Access Token
-   */
-  refreshAccessToken(refreshToken: string) {
+  async login(email: string, password: string) {
+    // Find user
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
+      throw new InvalidCredentialsException();
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new InvalidCredentialsException();
+    }
+
+    // Generate tokens
+    const accessToken = this.jwtService.sign(
+      {
+        userId: user._id.toString(),
+        email: user.email,
+        role: user.role || 'USER',
+      },
+      { expiresIn: '1h' },
+    );
+
+    const refreshToken = this.jwtService.sign(
+      { userId: user._id.toString() },
+      { expiresIn: '7d' },
+    );
+
+    return {
+      userId: user._id,
+      email: user.email,
+      fullName: user.fullName,
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async refreshToken(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
-        secret: process.env.REFRESH_TOKEN_SECRET || 'refresh-secret-key',
+      // Verify refresh token
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_SECRET || 'your-secret-key',
       });
 
-      if (payload.type !== 'refresh') {
-        throw new Error('Invalid token type');
+      if (!decoded.userId) {
+        throw new InvalidTokenException();
       }
 
-      const accessToken = this.generateAccessToken(
-        payload.userId,
-        payload.email,
+      // Find user
+      const user = await this.userModel.findById(decoded.userId);
+      if (!user) {
+        throw new UserNotFoundException();
+      }
+
+      // Generate new access token
+      const accessToken = this.jwtService.sign(
+        {
+          userId: user._id.toString(),
+          email: user.email,
+          role: user.role || 'USER',
+        },
+        { expiresIn: '1h' },
       );
 
       return {
         accessToken,
-        expiresIn: 900,
+        refreshToken,
       };
     } catch (error) {
-      throw new Error('Invalid or expired refresh token');
-    }
-  }
-
-  /**
-   * Register new user
-   */
-  async register(email: string, password: string, fullName: string) {
-    try {
-      // Check if user exists
-      const existingUser = await this.userModel.findOne({ email });
-      if (existingUser) {
-        throw new Error('Email already exists');
+      if (error instanceof UserNotFoundException) {
+        throw error;
       }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create user
-      const newUser = await this.userModel.create({
-        email,
-        passwordHash: hashedPassword,
-        fullName,
-        createdAt: new Date(),
-      });
-
-      // Generate tokens
-      const tokens = this.generateTokens(newUser._id.toString(), email);
-
-      return {
-        user: {
-          userId: newUser._id,
-          email: newUser.email,
-          fullName: newUser.fullName,
-        },
-        ...tokens,
-      };
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  /**
-   * Login user
-   */
-  async login(email: string, password: string) {
-    try {
-      // Find user
-      const user = await this.userModel.findOne({ email });
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      // Check password
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isPasswordValid) {
-        throw new Error('Invalid credentials');
-      }
-
-      // Generate tokens
-      const tokens = this.generateTokens(user._id.toString(), email);
-
-      return {
-        user: {
-          userId: user._id,
-          email: user.email,
-          fullName: user.fullName,
-        },
-        ...tokens,
-      };
-    } catch (error) {
-      throw new Error(error.message);
+      throw new InvalidTokenException();
     }
   }
 }

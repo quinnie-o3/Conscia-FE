@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Reminder } from '../schemas/reminder.schema';
+import {
+  ReminderNotFoundException,
+  InvalidInputException,
+} from '../exceptions/custom.exceptions';
 
 @Injectable()
 export class ReminderService {
@@ -25,9 +29,13 @@ export class ReminderService {
     }
 
     async getReminderById(reminderId: string) {
+        if (!reminderId) {
+            throw new InvalidInputException('reminderId', 'Reminder ID is required');
+        }
+
         const reminder = await this.reminderModel.findById(reminderId).exec();
         if (!reminder) {
-            throw new Error('Reminder not found');
+            throw new ReminderNotFoundException(reminderId);
         }
         return reminder;
     }
@@ -62,9 +70,11 @@ export class ReminderService {
     }
 
     async deleteReminder(reminderId: string) {
-        const reminder = await this.reminderModel.findByIdAndDelete(reminderId).exec();
+        const reminder = await this.reminderModel
+            .findByIdAndDelete(reminderId)
+            .exec();
         if (!reminder) {
-            throw new Error('Reminder not found');
+            throw new ReminderNotFoundException(reminderId);
         }
         return reminder;
     }

@@ -1,23 +1,18 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
+import { RegisterDto, LoginDto, RefreshTokenDto } from '../dtos/auth.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
-  /**
-   * POST /auth/register
-   * Register new user
-   */
   @Post('register')
-  async register(
-    @Body() body: { email: string; fullName: string; password: string },
-  ) {
+  async register(@Body() registerDto: RegisterDto) {
     try {
       const result = await this.authService.register(
-        body.email,
-        body.fullName,
-        body.password,
+        registerDto.email,
+        registerDto.fullName,
+        registerDto.password,
       );
       return {
         success: true,
@@ -28,52 +23,48 @@ export class AuthController {
       return {
         success: false,
         error: error.message,
-        message: 'Registration failed',
+        message: 'Failed to register user',
       };
     }
   }
 
-  /**
-   * POST /auth/login
-   * Login user
-   */
   @Post('login')
-  async login(@Body() body: { email: string; password: string }) {
+  async login(@Body() loginDto: LoginDto) {
     try {
-      const result = await this.authService.login(body.email, body.password);
+      const result = await this.authService.login(
+        loginDto.email,
+        loginDto.password,
+      );
       return {
         success: true,
         data: result,
-        message: 'Login successful',
+        message: 'User logged in successfully',
       };
     } catch (error) {
       return {
         success: false,
         error: error.message,
-        message: 'Login failed',
+        message: 'Failed to login',
       };
     }
   }
 
-  /**
- * POST /auth/refresh
- * Refresh access token
- * Body: { refreshToken }
- */
   @Post('refresh')
-  async refreshToken(@Body() body: { refreshToken: string }) {
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
     try {
-      const result = this.authService.refreshAccessToken(body.refreshToken);
+      const result = await this.authService.refreshToken(
+        refreshTokenDto.refreshToken,
+      );
       return {
         success: true,
         data: result,
-        message: 'Access token refreshed successfully',
+        message: 'Token refreshed successfully',
       };
     } catch (error) {
       return {
         success: false,
         error: error.message,
-        message: 'Token refresh failed',
+        message: 'Failed to refresh token',
       };
     }
   }

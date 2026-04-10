@@ -11,6 +11,10 @@ import {
 import { TagService } from '../services/tag.service';
 import { JwtGuard } from '../guards/jwt.guard';
 import { CurrentUser } from '../decorators/user.decorator';
+import {
+    CreatePurposeTagDto,
+    UpdatePurposeTagDto,
+} from '../dtos/purposetag.dto';
 
 @Controller('purpose-tags')
 export class PurposeTagController {
@@ -57,12 +61,7 @@ export class PurposeTagController {
     @UseGuards(JwtGuard)
     @Post()
     async createPurposeTag(
-        @Body()
-        body: {
-            tagName: string;
-            colorCode: string;
-            description: string;
-        },
+        @Body() createPurposeTagDto: CreatePurposeTagDto,
         @CurrentUser() user: any,
     ) {
         try {
@@ -75,9 +74,9 @@ export class PurposeTagController {
             }
 
             const result = await this.tagService.createTag(
-                body.tagName,
-                body.colorCode,
-                body.description,
+                createPurposeTagDto.tagName,
+                createPurposeTagDto.colorCode,
+                createPurposeTagDto.description,
             );
             return {
                 success: true,
@@ -97,7 +96,7 @@ export class PurposeTagController {
     @Put(':tagId')
     async updatePurposeTag(
         @Param('tagId') tagId: string,
-        @Body() body: any,
+        @Body() updatePurposeTagDto: UpdatePurposeTagDto,
         @CurrentUser() user: any,
     ) {
         try {
@@ -109,7 +108,7 @@ export class PurposeTagController {
                 };
             }
 
-            const result = await this.tagService.updateTag(tagId, body);
+            const result = await this.tagService.updateTag(tagId, updatePurposeTagDto);
             return {
                 success: true,
                 data: result,

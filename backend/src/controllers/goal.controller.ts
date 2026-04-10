@@ -12,6 +12,7 @@ import {
 import { GoalService } from '../services/goal.service';
 import { JwtGuard } from '../guards/jwt.guard';
 import { CurrentUser } from '../decorators/user.decorator';
+import { CreateGoalDto, UpdateGoalDto } from '../dtos/goal.dto';
 
 @Controller('goals')
 export class GoalController {
@@ -20,17 +21,11 @@ export class GoalController {
   @UseGuards(JwtGuard)
   @Post()
   async createGoal(
-    @Body()
-    body: {
-      goalType: string;
-      targetValue: number;
-      periodType: string;
-      appId?: string;
-    },
+    @Body() createGoalDto: CreateGoalDto,
     @CurrentUser() user: any,
   ) {
     try {
-      const result = await this.goalService.createGoal(user.userId, body);
+      const result = await this.goalService.createGoal(user.userId, createGoalDto);
       return {
         success: true,
         data: result,
@@ -116,7 +111,7 @@ export class GoalController {
   @Put(':goalId')
   async updateGoal(
     @Param('goalId') goalId: string,
-    @Body() body: any,
+    @Body() updateGoalDto: UpdateGoalDto,
     @CurrentUser() user: any,
   ) {
     try {
@@ -128,7 +123,7 @@ export class GoalController {
         );
       }
 
-      const result = await this.goalService.updateGoal(goalId, body);
+      const result = await this.goalService.updateGoal(goalId, updateGoalDto);
       return {
         success: true,
         data: result,

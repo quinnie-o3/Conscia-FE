@@ -12,6 +12,7 @@ import {
 import { AppInfoService } from '../services/app-info.service';
 import { JwtGuard } from '../guards/jwt.guard';
 import { CurrentUser } from '../decorators/user.decorator';
+import { CreateAppDto, UpdateAppDto } from '../dtos/app.dto';
 
 @Controller('apps')
 export class AppInfoController {
@@ -58,13 +59,7 @@ export class AppInfoController {
     @UseGuards(JwtGuard)
     @Post()
     async createApp(
-        @Body()
-        body: {
-            packageName: string;
-            appName: string;
-            category: string;
-            iconReference?: string;
-        },
+        @Body() createAppDto: CreateAppDto,
         @CurrentUser() user: any,
     ) {
         try {
@@ -77,10 +72,10 @@ export class AppInfoController {
             }
 
             const result = await this.appInfoService.createApp(
-                body.packageName,
-                body.appName,
-                body.category,
-                body.iconReference,
+                createAppDto.packageName,
+                createAppDto.appName,
+                createAppDto.category,
+                createAppDto.iconReference,
             );
             return {
                 success: true,
@@ -100,7 +95,7 @@ export class AppInfoController {
     @Put(':appId')
     async updateApp(
         @Param('appId') appId: string,
-        @Body() body: any,
+        @Body() updateAppDto: UpdateAppDto,
         @CurrentUser() user: any,
     ) {
         try {
@@ -112,7 +107,7 @@ export class AppInfoController {
                 };
             }
 
-            const result = await this.appInfoService.updateApp(appId, body);
+            const result = await this.appInfoService.updateApp(appId, updateAppDto);
             return {
                 success: true,
                 data: result,

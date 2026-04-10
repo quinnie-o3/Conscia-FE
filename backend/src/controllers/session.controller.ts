@@ -13,26 +13,28 @@ import {
 import { SessionService } from '../services/session.service';
 import { JwtGuard } from '../guards/jwt.guard';
 import { CurrentUser } from '../decorators/user.decorator';
+import {
+  CreateSessionDto,
+  CreateSessionsBatchDto,
+  ClassifySessionDto,
+  GetSessionsQueryDto,
+} from '../dtos/session.dto';
 
 @Controller('sessions')
 export class SessionController {
-  constructor(private sessionService: SessionService) { }
+  constructor(private sessionService: SessionService) {}
 
   @UseGuards(JwtGuard)
   @Post()
   async createSession(
-    @Body()
-    body: {
-      deviceId: string;
-      appId: string;
-      startTime: string;
-      endTime: string;
-      date: string;
-    },
+    @Body() createSessionDto: CreateSessionDto,
     @CurrentUser() user: any,
   ) {
     try {
-      const result = await this.sessionService.createSession(user.userId, body);
+      const result = await this.sessionService.createSession(
+        user.userId,
+        createSessionDto,
+      );
       return {
         success: true,
         data: result,
@@ -50,13 +52,13 @@ export class SessionController {
   @UseGuards(JwtGuard)
   @Post('batch')
   async createSessionsBatch(
-    @Body() body: { sessions: any[] },
+    @Body() createSessionsBatchDto: CreateSessionsBatchDto,
     @CurrentUser() user: any,
   ) {
     try {
       const result = await this.sessionService.createSessionsBatch(
         user.userId,
-        body.sessions,
+        createSessionsBatchDto.sessions,
       );
       return {
         success: true,
@@ -75,24 +77,19 @@ export class SessionController {
   @UseGuards(JwtGuard)
   @Get()
   async getSessions(
-    @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string,
-    @Query('appId') appId?: string,
-    @Query('status') status?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @CurrentUser() user?: any,
+    @Query() query: GetSessionsQueryDto,
+    @CurrentUser() user: any,
   ) {
     try {
       const result = await this.sessionService.getSessionsByUserId(
         user.userId,
         {
-          dateFrom,
-          dateTo,
-          appId,
-          status: status as 'classified' | 'unclassified',
-          page: page ? parseInt(page) : 1,
-          limit: limit ? parseInt(limit) : 20,
+          dateFrom: query.dateFrom,
+          dateTo: query.dateTo,
+          appId: query.appId,
+          status: query.status as 'classified' | 'unclassified',
+          page: query.page || 1,
+          limit: query.limit || 20,
         },
       );
       return {
@@ -189,7 +186,7 @@ export class SessionController {
   @Put(':sessionId/classify')
   async classifySession(
     @Param('sessionId') sessionId: string,
-    @Body() body: any,
+    @Body() classifySessionDto: ClassifySessionDto,
     @CurrentUser() user: any,
   ) {
     try {
@@ -203,7 +200,7 @@ export class SessionController {
 
       const result = await this.sessionService.classifySession(
         sessionId,
-        body,
+        classifySessionDto,
       );
       return {
         success: true,

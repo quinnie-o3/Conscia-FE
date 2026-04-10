@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { PurposeTag } from '../schemas/purpose-tag.schema';
+import {
+  TagNotFoundException,
+  InvalidInputException,
+} from '../exceptions/custom.exceptions';
 
 @Injectable()
 export class TagService {
@@ -28,18 +32,15 @@ export class TagService {
    * Get tag by ID
    */
   async getTagById(tagId: string) {
-    const tag = await this.tagModel.findById(tagId);
-    if (!tag) {
-      throw new Error('Tag not found');
+    if (!tagId) {
+      throw new InvalidInputException('tagId', 'Tag ID is required');
     }
 
-    return {
-      tagId: tag._id,
-      tagName: tag.tagName,
-      colorCode: tag.colorCode,
-      emoji: tag.emoji,
-      description: tag.description,
-    };
+    const tag = await this.tagModel.findById(tagId).exec();
+    if (!tag) {
+      throw new TagNotFoundException(tagId);
+    }
+    return tag;
   }
 
   /**
@@ -167,16 +168,10 @@ export class TagService {
    * Delete a tag
    */
   async deleteTag(tagId: string) {
-    const deletedTag = await this.tagModel.findByIdAndDelete(tagId);
-
-    if (!deletedTag) {
-      throw new Error('Tag not found');
+    const tag = await this.tagModel.findByIdAndDelete(tagId).exec();
+    if (!tag) {
+      throw new TagNotFoundException(tagId);
     }
-
-    return {
-      tagId: deletedTag._id,
-      tagName: deletedTag.tagName,
-      message: 'Tag deleted successfully',
-    };
+    return tag;
   }
 }
