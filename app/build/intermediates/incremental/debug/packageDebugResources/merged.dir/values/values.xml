@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="blue_text">#3B82F6</color>
+    <color name="light_gray">#F2F2F2</color>
+    <color name="purple_dark">#5D00FF</color>
+    <color name="purple_primary">#7B00FF</color>
+    <color name="white">#FFFFFF</color>
+    <string name="app_name">CONSCIA</string>
+    <style name="Base.Theme.CONSCIA" parent="Theme.Material3.DayNight.NoActionBar">
+        
+        
+    </style>
+    <style name="Theme.CONSCIA" parent="Base.Theme.CONSCIA"/>
+</resources>

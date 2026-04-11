@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
@@ -38,7 +39,20 @@ import { GoalController } from './controllers/goal.controller';
     }),
 
     // Connect to MongoDB
-    MongooseModule.forRoot(process.env.MONGODB_URI as string),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const uri = configService.get<string>('MONGODB_URI');
+
+        if (!uri) {
+          throw new Error(
+            'MONGODB_URI is not set. Create backend/.env and define MONGODB_URI.',
+          );
+        }
+
+        return { uri };
+      },
+    }),
 
     // Register all schemas
     MongooseModule.forFeature([
@@ -51,9 +65,12 @@ import { GoalController } from './controllers/goal.controller';
     ]),
 
     // Setup JWT
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '24h' },
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET', 'dev-jwt-secret'),
+        signOptions: { expiresIn: '24h' },
+      }),
     }),
   ],
   controllers: [
@@ -75,4 +92,4 @@ import { GoalController } from './controllers/goal.controller';
     GoalService,
   ],
 })
-export class AppModule { }
+export class AppModule {}
