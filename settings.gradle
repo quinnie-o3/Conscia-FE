@@ -19,5 +19,9 @@ dependencyResolutionManagement {
     }
 }
 
+// Khai báo rõ ràng tên và vị trí
 rootProject.name = "CONSCIA"
 include ':app'
+
+// Ép buộc đường dẫn tuyệt đối để tránh IDE nhảy về ổ D
+project(':app').projectDir = new File('D:/ARGGGG/CONSCIA/app')

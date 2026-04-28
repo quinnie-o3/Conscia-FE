@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.conscia.app-mergeDebugResources-33:/values-h720dp-v13/values-h720dp-v13.xml",
+            "outputFile": "com.example.conscia.app-mergeDebugResources-71:/values-h720dp-v13/values-h720dp-v13.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\Acer\\.gradle\\caches\\9.2.1\\transforms\\114e19e2362c6099192f7f160e5e0e81\\workspace\\transformed\\appcompat-1.7.1\\res\\values-h720dp-v13\\values-h720dp-v13.xml",
+                    "source": "C:\\Users\\Acer\\.gradle\\caches\\8.10.2\\transforms\\2bbde5e088ff4b508fd8301dab343cb7\\transformed\\appcompat-1.7.0\\res\\values-h720dp-v13\\values-h720dp-v13.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

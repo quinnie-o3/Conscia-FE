@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    id("com.google.devtools.ksp") version "2.0.0-1.0.21"
 }
 
 android {
@@ -14,11 +15,8 @@ android {
         targetSdk 34
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary true
-        }
+        vectorDrawables { useSupportLibrary true }
     }
 
     buildTypes {
@@ -31,17 +29,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = '11'
-    }
-    buildFeatures {
-        compose true
-    }
-    packaging {
-        resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
-        }
-    }
+    kotlinOptions { jvmTarget = '17' }
+    buildFeatures { compose true }
 }
 
 dependencies {
@@ -57,6 +46,23 @@ dependencies {
     implementation libs.material3
     implementation libs.activity.compose
     implementation libs.navigation.compose
+    
+    // DataStore for local storage
+    implementation "androidx.datastore:datastore-preferences:1.1.1"
+    
+    // Lifecycle ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:2.8.6"
+    
+    implementation "androidx.compose.material:material-icons-extended"
+
+    // Room
+    implementation libs.room.runtime
+    implementation libs.room.ktx
+    ksp libs.room.compiler
+
+    // WorkManager
+    implementation "androidx.work:work-runtime-ktx:2.9.1"
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
