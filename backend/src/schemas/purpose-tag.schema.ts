@@ -17,6 +17,9 @@ export class PurposeTag extends Document {
 
   @Prop({ default: true })
   isDefault: boolean;
+
+  @Prop({ enum: ['PURPOSEFUL', 'DISTRACTING', 'NEUTRAL'], default: 'NEUTRAL' })
+  category: string;
 }
 
 export const PurposeTagSchema = SchemaFactory.createForClass(PurposeTag);

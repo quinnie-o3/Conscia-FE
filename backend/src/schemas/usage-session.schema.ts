@@ -9,14 +9,23 @@ export class UsageSession extends Document {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Device', required: true })
   deviceId: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'AppInfo', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'AppInfo' })
   appId: string;
 
-  @Prop({ required: true })
-  startTime: Date;
+  @Prop({ unique: true, sparse: true })
+  externalId: string;
 
   @Prop()
-  endTime: Date;
+  packageName: string;
+
+  @Prop()
+  appName: string;
+
+  @Prop({ required: true })
+  startedAt: Date;
+
+  @Prop()
+  endedAt: Date;
 
   @Prop()
   durationSeconds: number;

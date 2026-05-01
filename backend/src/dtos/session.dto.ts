@@ -8,10 +8,10 @@ export class CreateSessionDto {
     appId: string;
 
     @IsString()
-    startTime: string;
+    startedAt: string;
 
     @IsString()
-    endTime: string;
+    endedAt: string;
 
     @IsString()
     date: string;
@@ -20,6 +20,44 @@ export class CreateSessionDto {
 export class CreateSessionsBatchDto {
     @IsArray()
     sessions: CreateSessionDto[];
+}
+
+export class SyncSessionDto {
+    @IsString()
+    @IsOptional()
+    externalId?: string;
+
+    @IsString()
+    deviceId: string;
+
+    @IsString()
+    @IsOptional()
+    packageName?: string;
+
+    @IsString()
+    @IsOptional()
+    appName?: string;
+
+    @IsString()
+    startedAt: string;
+
+    @IsString()
+    endedAt: string;
+
+    @IsNumber()
+    durationSeconds: number;
+
+    @IsOptional()
+    isClassified?: boolean;
+
+    @IsArray()
+    @IsOptional()
+    tags?: string[];
+}
+
+export class SyncSessionsBatchDto {
+    @IsArray()
+    sessions: SyncSessionDto[];
 }
 
 export class ClassifySessionDto {
