@@ -3,48 +3,57 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class UsageSession extends Document {
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
-    userId: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+  userId: string;
 
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Device', required: true })
-    deviceId: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Device', required: true })
+  deviceId: string;
 
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'AppInfo', required: true })
-    appId: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'AppInfo' })
+  appId: string;
 
-    @Prop({ required: true })
-    startTime: Date;
+  @Prop({ unique: true, sparse: true })
+  externalId: string;
 
-    @Prop()
-    endTime: Date;
+  @Prop()
+  packageName: string;
 
-    @Prop()
-    durationSeconds: number;
+  @Prop()
+  appName: string;
 
-    @Prop({ required: true })
-    sessionDate: Date;
+  @Prop({ required: true })
+  startedAt: Date;
 
-    @Prop({ default: false })
-    isCompleted: boolean;
+  @Prop()
+  endedAt: Date;
 
-    @Prop({ default: false })
-    isClassified: boolean;
+  @Prop()
+  durationSeconds: number;
 
-    @Prop([
-        {
-            tagId: { type: MongooseSchema.Types.ObjectId, ref: 'PurposeTag' },
-            tagName: String,
-            note: String,
-            classifiedAt: Date,
-        },
-    ])
-    tags: Array<any>;
+  @Prop({ required: true })
+  sessionDate: Date;
 
-    @Prop()
-    createdAt: Date;
+  @Prop({ default: false })
+  isCompleted: boolean;
 
-    @Prop()
-    updatedAt: Date;
+  @Prop({ default: false })
+  isClassified: boolean;
+
+  @Prop([
+    {
+      tagId: { type: MongooseSchema.Types.ObjectId, ref: 'PurposeTag' },
+      tagName: String,
+      note: String,
+      classifiedAt: Date,
+    },
+  ])
+  tags: Array<any>;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const UsageSessionSchema = SchemaFactory.createForClass(UsageSession);

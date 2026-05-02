@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
@@ -11,8 +10,12 @@ import { User, UserSchema } from './schemas/user.schema';
 import { Device, DeviceSchema } from './schemas/device.schema';
 import { AppInfo, AppInfoSchema } from './schemas/app-info.schema';
 import { PurposeTag, PurposeTagSchema } from './schemas/purpose-tag.schema';
-import { UsageSession, UsageSessionSchema } from './schemas/usage-session.schema';
+import {
+  UsageSession,
+  UsageSessionSchema,
+} from './schemas/usage-session.schema';
 import { Goal, GoalSchema } from './schemas/goal.schema';
+import { Reminder, ReminderSchema } from './schemas/reminder.schema';
 
 // Import all services
 import { AuthService } from './services/auth.service';
@@ -21,6 +24,9 @@ import { DeviceService } from './services/device.service';
 import { SessionService } from './services/session.service';
 import { TagService } from './services/tag.service';
 import { GoalService } from './services/goal.service';
+import { AppInfoService } from './services/app-info.service';
+import { ReminderService } from './services/reminder.service';
+import { StatisticsService } from './services/statistics.service';
 
 // Import all controllers
 import { AuthController } from './controllers/auth.controller';
@@ -29,6 +35,13 @@ import { DeviceController } from './controllers/device.controller';
 import { SessionController } from './controllers/session.controller';
 import { TagController } from './controllers/tag.controller';
 import { GoalController } from './controllers/goal.controller';
+import { PurposeTagController } from './controllers/purpose-tag.controller';
+import { AppInfoController } from './controllers/app-info.controller';
+import { ReminderController } from './controllers/reminder.controller';
+import { StatisticsController } from './controllers/statistics.controller';
+
+// Import guards
+import { JwtGuard } from './guards/jwt.guard';
 
 @Module({
   imports: [
@@ -39,20 +52,7 @@ import { GoalController } from './controllers/goal.controller';
     }),
 
     // Connect to MongoDB
-    MongooseModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const uri = configService.get<string>('MONGODB_URI');
-
-        if (!uri) {
-          throw new Error(
-            'MONGODB_URI is not set. Create backend/.env and define MONGODB_URI.',
-          );
-        }
-
-        return { uri };
-      },
-    }),
+    MongooseModule.forRoot(process.env.MONGODB_URI as string),
 
     // Register all schemas
     MongooseModule.forFeature([
@@ -62,15 +62,13 @@ import { GoalController } from './controllers/goal.controller';
       { name: PurposeTag.name, schema: PurposeTagSchema },
       { name: UsageSession.name, schema: UsageSessionSchema },
       { name: Goal.name, schema: GoalSchema },
+      { name: Reminder.name, schema: ReminderSchema },
     ]),
 
     // Setup JWT
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'dev-jwt-secret'),
-        signOptions: { expiresIn: '24h' },
-      }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '24h' },
     }),
   ],
   controllers: [
@@ -81,6 +79,10 @@ import { GoalController } from './controllers/goal.controller';
     SessionController,
     TagController,
     GoalController,
+    PurposeTagController,
+    AppInfoController,
+    ReminderController,
+    StatisticsController,
   ],
   providers: [
     AppService,
@@ -90,6 +92,10 @@ import { GoalController } from './controllers/goal.controller';
     SessionService,
     TagService,
     GoalService,
+    AppInfoService,
+    JwtGuard,
+    ReminderService,
+    StatisticsService,
   ],
 })
-export class AppModule {}
+export class AppModule { }

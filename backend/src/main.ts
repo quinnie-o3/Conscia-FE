@@ -1,10 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger('Bootstrap');
 
   // Enable CORS
   app.enableCors();
@@ -15,8 +17,14 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
+
+  // Global exception filter
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Swagger documentation
   const config = new DocumentBuilder()
@@ -31,10 +39,9 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
 
-  await app.listen(process.env.PORT || 3000);
-  console.log(
-    `Application is running on: http://localhost:${process.env.PORT || 3000}`,
-  );
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  logger.log(`Application is running on: http://localhost:${port}`);
 }
 
 bootstrap();
