@@ -68,7 +68,7 @@ export class SessionService {
       const ops = sessions.map((session) => {
         const externalId = session.externalId || `${userId}_${session.packageName}_${session.startedAt}`;
         
-        let tagsObj = [];
+        let tagsObj: any[] = [];
         if (session.tags && Array.isArray(session.tags)) {
            tagsObj = session.tags.map(t => typeof t === 'string' ? { tagName: t } : t);
         }
@@ -200,7 +200,7 @@ export class SessionService {
 
     let totalDurationSeconds = 0;
     const categoryStats = new Map<string, number>();
-    const formattedTags = [];
+    const formattedTags: any[] = [];
 
     for (const res of aggResults) {
       const tagName = res._id.tagName;
@@ -228,7 +228,7 @@ export class SessionService {
     }
 
     // Process categories
-    const categories = [];
+    const categories: any[] = [];
     for (const [category, duration] of categoryStats.entries()) {
       categories.push({
         category,

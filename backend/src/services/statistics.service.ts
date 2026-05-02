@@ -255,7 +255,7 @@ export class StatisticsService {
             const populatedApp = session.appId as any;
             const appId = populatedApp?._id?.toString() || 'unknown';
             const appName = populatedApp?.appName || 'Unknown App';
-            const hour = new Date(session.startTime).getHours();
+            const hour = new Date(session.startedAt).getHours();
 
             if (!appUsage[appId]) {
                 appUsage[appId] = {
